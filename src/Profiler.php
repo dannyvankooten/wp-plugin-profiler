@@ -39,9 +39,9 @@ class Profiler {
 	 */
 	private $steps = array(
 		'no_plugins',
-		'all_plugins',
 		'only_profiled_plugin',
-		'all_plugins_minus_profiled'
+		'all_plugins_minus_profiled',
+		'all_plugins'
 	);
 
 	/**
@@ -99,9 +99,6 @@ class Profiler {
 
 		set_time_limit( 0 );
 
-		// build url to send request to
-		$url = add_query_arg( array( '_pp_profiling' => 1 ), home_url() );
-
 		$results = array();
 		foreach( $this->steps as $step ) {
 			$results[ $step ] = $this->profile_step( $step );
@@ -148,10 +145,10 @@ class Profiler {
 					<?php printf( 'Only %s.', $this->plugin_name ); ?>
 				</th>
 				<th colspan="2" class="name">
-					<?php printf( 'All active plugins (%s)', $this->number_of_active_plugins ); ?>
+					<?php printf( 'All active plugins, minus %s.', $this->plugin_name ); ?>
 				</th>
 				<th colspan="2" class="name">
-					<?php printf( 'All active plugins, minus %s.', $this->plugin_name ); ?>
+					<?php printf( 'All active plugins (%s)', $this->number_of_active_plugins ); ?>
 				</th>
 			</tr>
 			<tr>

@@ -46,19 +46,20 @@ class PluginManager {
 				return array( $this->profiled_plugin_slug );
 				break;
 
-			// test all (active) plugins
-			case 'all_plugins':
-				return $plugins;
-				break;
-
 			// test all plugins minus the plugin to benchmark
 			case 'all_plugins_minus_profiled':
 				foreach( $plugins as $key => $plugin_slug ) {
 					if( $plugin_slug == $this->profiled_plugin_slug ) {
+						die();
 						unset( $plugins[$key] );
 						return $plugins;
 					}
 				}
+				break;
+
+			// test all (active) plugins
+			case 'all_plugins':
+				return $plugins;
 				break;
 
 		}
