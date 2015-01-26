@@ -36,29 +36,30 @@ class PluginManager {
 
 		switch( $this->step ) {
 
-			// test no plugins
+			// activate no plugins
 			case 'no_plugins':
 				return array();
 				break;
 
-			// test only plugin to benchmark
+			// activate only plugin to benchmark
 			case 'only_profiled_plugin':
 				return array( $this->profiled_plugin_slug );
 				break;
 
-			// test all plugins minus the plugin to benchmark
+			// deactivate profiled plugin for this request
 			case 'all_plugins_minus_profiled':
-				foreach( $plugins as $key => $plugin_slug ) {
-					if( $plugin_slug == $this->profiled_plugin_slug ) {
-						die();
-						unset( $plugins[$key] );
-						return $plugins;
-					}
+				$key = array_search( $this->profiled_plugin_slug, $plugins );
+				if( $key ) {
+					unset( $plugins[ $key ] );
 				}
 				break;
 
-			// test all (active) plugins
+			// make sure tested plugin is activated for this request
 			case 'all_plugins':
+				if( ! in_array( $this->profiled_plugin_slug, $plugins ) ) {
+					$plugins[] = $this->profiled_plugin_slug;
+				}
+
 				return $plugins;
 				break;
 
