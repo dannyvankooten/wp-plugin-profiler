@@ -182,7 +182,7 @@ class Profiler {
 		$avg_percentage = ( ( $results['only_profiled_plugin']['average_time'] / $results['no_plugins']['average_time'] ) + ( $results['all_plugins']['average_time'] / $results['all_plugins_minus_profiled']['average_time'] ) ) / 2 * 100 - 100;
 		$avg_seconds = ( ( $results['only_profiled_plugin']['average_time'] - $results['no_plugins']['average_time'] ) + ( $results['all_plugins']['average_time'] - $results['all_plugins_minus_profiled']['average_time'] ) ) / 2;
 		?>
-		<p><?php printf( 'On average, %s added %s&#37; (%s seconds) to each homepage request. This is not taking any additional requests into account, just the time it took to generate the homepage HTML.', $this->plugin_name . ' v' . $this->plugin_version, round( $avg_percentage, 2 ), round( $avg_seconds, 4 ) ); ?></p>
+		<p><?php printf( 'On average, %s added <strong>%s&#37;</strong> (%s seconds) for each request to <strong>%s</strong>. This is not taking any additional requests into account, just the time it took to generate the HTML.', $this->plugin_name . ' v' . $this->plugin_version, round( $avg_percentage, 2 ), round( $avg_seconds, 4 ), $this->url ); ?></p>
 		<?php
 
 		exit; // todo: make this pretty
