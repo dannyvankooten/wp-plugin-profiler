@@ -16,9 +16,16 @@ class Manager {
 	private $container;
 
 	/**
+	 * @var bool
+	 */
+	private $is_mu_plugin = false;
+
+	/**
 	 * Constructor
 	 */
 	public function __construct( ) {
+
+		$this->is_mu_plugin = ! did_action( 'muplugins_loaded' );
 
 		$this->container = new Container();
 		$this->container['profiler'] = function( $c ) {
