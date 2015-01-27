@@ -101,8 +101,7 @@ class Profiler {
 		}
 
 		// calculate percentage difference between steps
-		$this->percentage_difference = ( ( $this->results['only_profiled_plugin']['average_time'] / $this->results['no_plugins']['average_time'] ) + ( $this->results['all_plugins']['average_time'] / $this->results['all_plugins_minus_profiled']['average_time'] ) ) / 2 * 100 - 100;
-
+		$this->percentage_difference = $this->calculate_percentage_difference( $this->results );
 	}
 
 	/**
@@ -134,7 +133,7 @@ class Profiler {
 		$times = array();
 
 		// build url
-		$url = add_query_arg( array( '_pp_profiling' => 1, 'step' => $step, 'slug' => $this->plugin_slug ), $this->url );
+		$url = $this->generate_profile_url( $step );
 
 		// test each step X times
 		for( $i = 0; $i < $this->number_of_requests; $i++ ) {
@@ -162,6 +161,45 @@ class Profiler {
 			'average_time' => number_format( $average_time, 4 ),
 			'total_time' => number_format( $total_time, 4 )
 		);
+	}
+
+	/**
+	 * Generates the URL to which the profile request is sent.
+	 *
+	 * @param $step
+	 * @return string
+	 */
+	private function generate_profile_url( $step ) {
+
+		$parameters = array(
+			'step' => $step,
+			'slug' => $this->plugin_slug
+		);
+
+		// generate secret for config parameters
+		$parameters['_pp_secret'] = hash_hmac( 'sha1', build_query( $parameters ) , AUTH_KEY );
+		$parameters['_pp_profiling'] = 1;
+
+		// return URL with secret parameter in it
+		return add_query_arg(  $parameters, $this->url );
+	}
+
+	/**
+	 * @param $results
+	 *
+	 * @return float
+	 */
+	private function calculate_percentage_difference( $results ) {
+
+		$percentage_difference = ( ( $results['only_profiled_plugin']['average_time'] / $results['no_plugins']['average_time'] )
+		                           + ( $results['all_plugins']['average_time'] / $results['all_plugins_minus_profiled']['average_time'] ) )
+		                            / 2 * 100 - 100;
+
+		if( $percentage_difference < 0 ) {
+			return 0;
+		}
+
+		return round( $percentage_difference, 2 );
 	}
 
 
