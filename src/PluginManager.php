@@ -44,7 +44,7 @@ class PluginManager {
 		}
 
 		// get given secret
-		$secret = (string) $_GET['_pp_secret'];
+		$given_secret = (string) $_GET['_pp_secret'];
 
 		// generate expected secret
 		$parameters = array(
@@ -54,11 +54,11 @@ class PluginManager {
 		$expected_secret = hash_hmac( 'sha1', build_query( $parameters ) , AUTH_KEY );
 
 		// compare hashes
-		if( function_exists( 'hash_compare' ) ) {
-			return hash_compare( $secret, $expected_secret );
+		if( function_exists( 'hash_equals' ) ) {
+			return hash_equals( $expected_secret, $given_secret );
 		}
 
-		return ( $secret === $expected_secret );
+		return ( $given_secret === $expected_secret );
 	}
 
 	/**
