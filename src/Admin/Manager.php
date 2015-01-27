@@ -73,7 +73,20 @@ class Manager {
 		$min = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
 
 		wp_enqueue_style( 'plugin-profiler-admin', $this->asset_url( "/css/admin{$min}.css" ) );
-		wp_enqueue_script( 'plugin-profiler-admin', $this->asset_url( "/js/admin{$min}.js" ), array( 'jquery', 'wp-color-picker' ), Plugin::VERSION, true );
+
+		wp_enqueue_script( 'mithril', $this->asset_url( "/js/mithril{$min}.js" ), array(), Plugin::VERSION, true );
+		wp_enqueue_script( 'chart', $this->asset_url( "/js/chart{$min}.js" ), array(), Plugin::VERSION, true );
+		wp_enqueue_script( 'plugin-profiler-admin', $this->asset_url( "/js/admin{$min}.js" ), array( 'mithril', 'chart' ), Plugin::VERSION, true );
+
+		$profiler = $this->container['profiler'];
+		$data = array(
+			'config' => array(
+				'url' => $profiler->url,
+				'n' => $profiler->number_of_requests,
+				'plugins' => array_map( function( $a ) { return $a['Name']; }, get_plugins() )
+			)
+		);
+		wp_localize_script( 'plugin-profiler-admin', 'wpp', $data );
 
 		return true;
 	}
@@ -85,8 +98,8 @@ class Manager {
 
 		// Instantiate profiler if it's set
 		if( isset( $_REQUEST['_pp'] ) && $_REQUEST['_pp'] == 1 ) {
-			$profiler = $this->container['profiler'];
-			$profiler->run();
+			//$profiler = $this->container['profiler'];
+			//$profiler->run();
 		}
 
 	}
