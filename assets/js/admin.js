@@ -5,13 +5,13 @@
 	var Config = function( data ) {
 		this.url = m.prop( data.url );
 		this.plugins = m.prop( data.plugins );
-		this.slug = m.prop( data.slug );
+		this.slug = m.prop( data.slug || Object.keys(data.plugins)[0] );
 		this.n = m.prop( data.n );
 	};
 
 
-	// Profiler
 
+	// Profiler
 	var Profiler = {};
 
 	Profiler.vm = (function() {
@@ -29,6 +29,12 @@
 
 	})();
 
+	Profiler.recalculate = function() {
+		var results = Profiler.vm.results();
+
+		//console.log( sums );
+	};
+
 	Profiler.start = function() {
 		Profiler.vm.running( true );
 		Profiler.getResult();
@@ -40,22 +46,23 @@
 			return;
 		}
 
-		var results = Profiler.vm.results();
-		results.push( results.length + 1 );
+		// Benchmark each step
+		var args = {
+			method: "GET",
+			url: wpp.ajaxurl,
+			data: {
+				action: 'plugin_profiler',
+				url: Profiler.vm.config.url(),
+				slug: Profiler.vm.config.slug()
+			}
+		};
 
-		// recalculate average
-		var sum = 0;
-		var avg = 0;
-		results.forEach( function( r ) {
-			sum += r;
+		m.request( args).then( function(result) {
+			Profiler.vm.results().push( result );
+			//Profiler.recalculate();
+			m.redraw();
+			Profiler.getResult();
 		});
-
-		avg = sum / results.length;
-
-		Profiler.vm.average(avg);
-
-		setTimeout( Profiler.getResult, 500 );
-		m.redraw();
 	};
 
 	Profiler.stop = function() {
@@ -86,7 +93,7 @@
 					m("tr", [
 						m("th", "Select the plugin to profile."),
 						m("td", [
-							m("select", { onchange:m.withAttr( "value", Profiler.vm.config.slug ) }, Object.keys(Profiler.vm.config.plugins()).map( function( key ) {
+							m("select", { onchange: m.withAttr( "value", Profiler.vm.config.slug ) }, Object.keys(Profiler.vm.config.plugins()).map( function( key ) {
 								return m("option", { value: key }, Profiler.vm.config.plugins()[key] );
 							}) )
 						] )
@@ -110,12 +117,41 @@
 			];
 		}
 
-		return [
-			m("p", "Average time: " + vm.average() ),
-			m("p", vm.results().map( function( result ) {
-					return m("p", "Result " + result );
-			}) )
-		];
+		return m("div.results", [
+			m("p", "On average, the profiled plugin added xx% to each request."),
+			m("table", [
+				m("tr", [
+					m("th.row-title", "#"),
+					vm.results().map( function( r, i ) {
+						return m( "td", i + 1 );
+					})
+				]),
+				m("tr", [
+					m("th", "No plugins"),
+					vm.results().map( function( r, i ) {
+						return m("td", r.no_plugins );
+					})
+				]),
+				m("tr", [
+					m("th", "Only profiled plugin"),
+					vm.results().map( function( r, i ) {
+						return m("td", r.only_slug );
+					})
+				]),
+				m("tr", [
+					m("th", "All but profiled"),
+					vm.results().map( function( r, i ) {
+						return m("td", r.all_but_slug );
+					})
+				]),
+				m("tr", [
+					m("th", "All plugins"),
+					vm.results().map( function( r, i ) {
+						return m("td", r.all_plugins );
+					})
+				])
+			])
+		]);
 	};
 
 	m.module( document.getElementById('profiler-mount'), Profiler );

@@ -81,8 +81,12 @@ class Plugin {
 			new PluginManager();
 		}
 
-		if( is_admin() && ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) ) {
-			new Admin\Manager();
+		if( is_admin() ) {
+			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+				new AJAX\Listener();
+			} else {
+				new Admin\Manager();
+			}
 		}
 
 	}

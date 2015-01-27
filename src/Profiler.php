@@ -49,8 +49,8 @@ class Profiler {
 	 */
 	private $steps = array(
 		'no_plugins',
-		'only_profiled_plugin',
-		'all_plugins_minus_profiled',
+		'only_slug',
+		'all_but_slug',
 		'all_plugins'
 	);
 
@@ -71,10 +71,6 @@ class Profiler {
 	 */
 	public function __construct() {
 
-		if( isset( $_REQUEST['n'] ) && '' !== $_REQUEST['n'] ) {
-			$this->number_of_requests = absint( $_REQUEST['n'] );
-		}
-
 		if( isset( $_REQUEST['slug'] ) && '' !== $_REQUEST['slug'] ) {
 			$this->plugin_slug = $_REQUEST['slug'];
 		}
@@ -93,7 +89,7 @@ class Profiler {
 
 		set_time_limit( 0 );
 
-		$this->get_info();
+		//$this->get_info();
 
 		// fill results
 		foreach( $this->steps as $step ) {
@@ -101,7 +97,7 @@ class Profiler {
 		}
 
 		// calculate percentage difference between steps
-		$this->percentage_difference = $this->calculate_percentage_difference( $this->results );
+		//$this->percentage_difference = $this->calculate_percentage_difference( $this->results );
 	}
 
 	/**
@@ -136,7 +132,7 @@ class Profiler {
 		$url = $this->generate_profile_url( $step );
 
 		// test each step X times
-		for( $i = 0; $i < $this->number_of_requests; $i++ ) {
+		//for( $i = 0; $i < $this->number_of_requests; $i++ ) {
 			$start = microtime( true );
 
 			wp_remote_get( $url,
@@ -147,20 +143,21 @@ class Profiler {
 				)
 			);
 
-			$times[] = microtime( true ) - $start;
-		}
+			$time = microtime( true ) - $start;
+		//}
 
 		// total time
-		$total_time = array_sum( $times );
+		//$total_time = array_sum( $times );
 
 		// calculate average time
-		$average_time = $total_time / count( $times );
+		//$average_time = $total_time / count( $times );
+		return round( $time, 3 );
 
-		return array(
-			'times' => $times,
-			'average_time' => number_format( $average_time, 4 ),
-			'total_time' => number_format( $total_time, 4 )
-		);
+//		return array(
+//			'times' => $times,
+//			'average_time' => number_format( $average_time, 4 ),
+//			'total_time' => number_format( $total_time, 4 )
+//		);
 	}
 
 	/**

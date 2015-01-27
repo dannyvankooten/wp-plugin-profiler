@@ -3,30 +3,22 @@
 
 	.results {
 
-		border-collapse: collapse;
-		table-layout: fixed;
 		width: 100%;
+		overflow-x: scroll;
 
-		.titles th {
-			text-align: center;
-			width: 25%;
+		table {
+			border-collapse: collapse;
+
 		}
 
-		th,
-		td {
-			text-align: left;
+		th, td {
 			border: 1px solid #ccc;
-			padding: 6px 12px;
-		}
-
-		.totals th,
-		.totals td {
-			border-top: 2px solid black;
-			border-bottom: 2px solid black;
-		}
-
-		.details th {
+			padding: 5px;
 			text-align: center;
+		}
+
+		th.row-title{
+			text-align: right;
 		}
 
 	}

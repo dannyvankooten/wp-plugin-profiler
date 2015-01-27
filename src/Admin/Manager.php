@@ -84,7 +84,8 @@ class Manager {
 				'url' => $profiler->url,
 				'n' => $profiler->number_of_requests,
 				'plugins' => array_map( function( $a ) { return $a['Name']; }, get_plugins() )
-			)
+			),
+			'ajaxurl' => admin_url( 'admin-ajax.php' )
 		);
 		wp_localize_script( 'plugin-profiler-admin', 'wpp', $data );
 

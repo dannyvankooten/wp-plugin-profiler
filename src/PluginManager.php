@@ -76,12 +76,12 @@ class PluginManager {
 				break;
 
 			// activate only plugin to benchmark
-			case 'only_profiled_plugin':
+			case 'only_slug':
 				return array( $this->profiled_plugin_slug );
 				break;
 
 			// deactivate profiled plugin for this request
-			case 'all_plugins_minus_profiled':
+			case 'all_but_slug':
 				$key = array_search( $this->profiled_plugin_slug, $plugins );
 				if( $key ) {
 					unset( $plugins[ $key ] );
