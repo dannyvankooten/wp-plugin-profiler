@@ -1,0 +1,34 @@
+#profiler {
+
+
+	.results {
+
+		border-collapse: collapse;
+		table-layout: fixed;
+		width: 100%;
+
+		.titles th {
+			text-align: center;
+			width: 25%;
+		}
+
+		th,
+		td {
+			text-align: left;
+			border: 1px solid #ccc;
+			padding: 6px 12px;
+		}
+
+		.totals th,
+		.totals td {
+			border-top: 2px solid black;
+			border-bottom: 2px solid black;
+		}
+
+		.details th {
+			text-align: center;
+		}
+
+	}
+
+}

@@ -1,0 +1,25 @@
+#profiler .results {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+#profiler .results .titles th {
+  text-align: center;
+  width: 25%;
+}
+#profiler .results th,
+#profiler .results td {
+  text-align: left;
+  border: 1px solid #ccc;
+  padding: 6px 12px;
+}
+#profiler .results .totals th,
+#profiler .results .totals td {
+  border-top: 2px solid black;
+  border-bottom: 2px solid black;
+}
+#profiler .results .details th {
+  text-align: center;
+}
+
+/*# sourceMappingURL=admin.css.map */

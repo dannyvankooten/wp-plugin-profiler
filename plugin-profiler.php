@@ -48,6 +48,11 @@ class Plugin {
 	private static $instance;
 
 	/**
+	 * @var
+	 */
+	public $profiler;
+
+	/**
 	 * @return Plugin
 	 */
 	public static function instance() {
@@ -62,7 +67,6 @@ class Plugin {
 	 * Constructor
 	 */
 	private function __construct() {
-
 		require __DIR__ . '/vendor/autoload.php';
 
 		$this->route();
@@ -73,12 +77,12 @@ class Plugin {
 	 */
 	public function route() {
 
-		if( isset( $_GET['_pp'] ) && $_GET['_pp'] == 1 ) {
-			new Profiler();
-		}
-
 		if( isset( $_GET['_pp_profiling'] ) && $_GET['_pp_profiling'] == 1 ) {
 			new PluginManager();
+		}
+
+		if( is_admin() ) {
+			new Admin\Manager();
 		}
 
 	}

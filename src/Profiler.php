@@ -5,16 +5,20 @@ namespace PluginProfiler;
 class Profiler {
 
 	/**
+	 * Number of requests to make during the benchmark
+	 *
 	 * @var int
 	 */
-	private $number_of_requests = 10;
+	public $number_of_requests = 10;
 
 	/**
 	 * @var int
 	 */
-	private $number_of_active_plugins = 0;
+	public $number_of_active_plugins = 0;
 
 	/**
+	 * Slug of the plugin that's being benchmarked
+	 *
 	 * @var string
 	 */
 	private $plugin_slug = '';
@@ -22,19 +26,25 @@ class Profiler {
 	/**
 	 * @var string
 	 */
-	private $plugin_name = '';
+	public $plugin_name = '';
 
 	/**
+	 * Version of the plugin that is being benchmarked
+	 *
 	 * @var
 	 */
-	private $plugin_version = '';
+	public $plugin_version = '';
 
 	/**
+	 * The URL to point the requests to
+	 *
 	 * @var string
 	 */
-	private $url = '';
+	public $url = '';
 
 	/**
+	 * Array of the various steps to benchmark
+	 *
 	 * @var array
 	 */
 	private $steps = array(
@@ -45,34 +55,60 @@ class Profiler {
 	);
 
 	/**
+	 * Array that holds the profiler results
+	 *
+	 * @var array
+	 */
+	public $results = array();
+
+	/**
+	 * @var float
+	 */
+	public $percentage_difference = 0;
+
+	/**
 	 * Constructor
 	 */
 	public function __construct() {
-		add_action( 'init', array( $this, 'init' ) );
+
+		if( isset( $_REQUEST['n'] ) && '' !== $_REQUEST['n'] ) {
+			$this->number_of_requests = absint( $_REQUEST['n'] );
+		}
+
+		if( isset( $_REQUEST['slug'] ) && '' !== $_REQUEST['slug'] ) {
+			$this->plugin_slug = $_REQUEST['slug'];
+		}
+
+		if( isset( $_REQUEST['url'] ) && '' !== $_REQUEST['url'] ) {
+			$this->url = $_REQUEST['url'];
+		} else {
+			$this->url = home_url();
+		}
 	}
 
 	/**
-	 * @return bool
+	 * Benchmark each step
 	 */
-	public function init() {
+	public function run() {
 
-		// only run for authorized users
-		if( ! current_user_can( 'manage_options' ) ) {
-			return false;
+		set_time_limit( 0 );
+
+		$this->get_info();
+
+		// fill results
+		foreach( $this->steps as $step ) {
+			$this->results[ $step ] = $this->profile_step( $step );
 		}
 
-		if( isset( $_GET['n'] ) ) {
-			$this->number_of_requests = absint( $_GET['n'] );
-		}
+		// calculate percentage difference between steps
+		$this->percentage_difference = ( ( $this->results['only_profiled_plugin']['average_time'] / $this->results['no_plugins']['average_time'] ) + ( $this->results['all_plugins']['average_time'] / $this->results['all_plugins_minus_profiled']['average_time'] ) ) / 2 * 100 - 100;
 
-		if( isset( $_GET['slug'] ) ) {
-			$this->plugin_slug = $_GET['slug'];
-		} else {
-			_doing_it_wrong( 'Profiler::init', 'You should provide a plugin slug via the URL `slug` parameter.', Plugin::VERSION );
-			return false;
-		}
+	}
 
-		$this->url = ( isset( $_GET['url'] ) ) ? $_GET['url'] : home_url();
+	/**
+	 * Get some info about the environment we're running in.
+	 */
+	private function get_info() {
 
 		// count number of active plugins
 		$this->number_of_active_plugins = count( get_option('active_plugins') );
@@ -85,107 +121,6 @@ class Profiler {
 		$data = get_plugin_data( WP_PLUGIN_DIR . '/' . $this->plugin_slug );
 		$this->plugin_name = $data['Name'];
 		$this->plugin_version = $data['Version'];
-
-		// run benchmark
-		$this->run_profile();
-
-		return true;
-	}
-
-	/**
-	 * Benchmark each step
-	 */
-	public function run_profile() {
-
-		set_time_limit( 0 );
-
-		$results = array();
-		foreach( $this->steps as $step ) {
-			$results[ $step ] = $this->profile_step( $step );
-		}
-
-		?>
-		<style>
-
-			h2,
-			p,
-			table {
-				font-family: Verdana, sans-serif;
-			}
-
-			table {
-				border-collapse: collapse;
-			}
-
-			th.name {
-				text-align: center;
-				padding: 12px 24px;
-				font-size: 16px;
-			}
-
-			th,
-			td {
-				text-align: left;
-				border: 1px solid #efefef;
-				padding: 6px 12px;
-			}
-
-			tr.total th,
-			tr.total td {
-				border-top: 2px solid black;
-			}
-		</style>
-
-		<table>
-			<tr>
-				<th colspan="2" class="name">
-					No plugins
-				</th>
-				<th colspan="2" class="name">
-					<?php printf( 'Only %s.', $this->plugin_name ); ?>
-				</th>
-				<th colspan="2" class="name">
-					<?php printf( 'All active plugins, minus %s.', $this->plugin_name ); ?>
-				</th>
-				<th colspan="2" class="name">
-					<?php printf( 'All active plugins (%s)', $this->number_of_active_plugins ); ?>
-				</th>
-			</tr>
-			<tr>
-				<?php foreach( $results as $r ) { ?>
-					<th>Description</th>
-					<th>Time <em>(seconds)</em></th>
-				<?php } ?>
-			</tr>
-			<?php for( $i = 0; $i < $this->number_of_requests; $i++ ) { ?>
-				<tr>
-					<?php foreach( $results as $result ) { ?>
-						<td>Request <?php echo $i + 1; ?></td>
-						<td><?php echo number_format( $result['times'][$i], 4 ); ?></td>
-					<?php } ?>
-				</tr>
-			<?php } ?>
-			<tr class="total">
-				<?php foreach( $results as $result ) { ?>
-					<th>Total time</th>
-					<td><?php echo $result['total_time']; ?></td>
-				<?php } ?>
-			</tr>
-			<tr class="total">
-				<?php foreach( $results as $result ) { ?>
-					<th>Avg time</th>
-					<td><?php echo $result['average_time']; ?></td>
-				<?php } ?>
-			</tr>
-		</table>
-		<?php
-		$avg_percentage = ( ( $results['only_profiled_plugin']['average_time'] / $results['no_plugins']['average_time'] ) + ( $results['all_plugins']['average_time'] / $results['all_plugins_minus_profiled']['average_time'] ) ) / 2 * 100 - 100;
-		$avg_seconds = ( ( $results['only_profiled_plugin']['average_time'] - $results['no_plugins']['average_time'] ) + ( $results['all_plugins']['average_time'] - $results['all_plugins_minus_profiled']['average_time'] ) ) / 2;
-		?>
-		<p><?php printf( 'On average, %s added <strong>%s&#37;</strong> (%s seconds) for each request to <strong>%s</strong>. This is not taking any additional requests into account, just the time it took to generate the HTML.', $this->plugin_name . ' v' . $this->plugin_version, round( $avg_percentage, 2 ), round( $avg_seconds, 4 ), $this->url ); ?></p>
-		<?php
-
-		exit; // todo: make this pretty
 	}
 
 	/**
@@ -193,7 +128,7 @@ class Profiler {
 	 *
 	 * @return array
 	 */
-	public function profile_step( $step ) {
+	private function profile_step( $step ) {
 
 		// array of times
 		$times = array();
@@ -204,7 +139,15 @@ class Profiler {
 		// test each step X times
 		for( $i = 0; $i < $this->number_of_requests; $i++ ) {
 			$start = microtime( true );
-			wp_remote_get( $url );
+
+			wp_remote_get( $url,
+				array(
+					'headers' => array(
+						'Accept-Encoding' => '*'
+					)
+				)
+			);
+
 			$times[] = microtime( true ) - $start;
 		}
 
