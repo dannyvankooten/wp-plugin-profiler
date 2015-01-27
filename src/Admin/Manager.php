@@ -82,7 +82,6 @@ class Manager {
 		$data = array(
 			'config' => array(
 				'url' => $profiler->url,
-				'n' => $profiler->number_of_requests,
 				'plugins' => array_map( function( $a ) { return $a['Name']; }, get_plugins() )
 			),
 			'ajaxurl' => admin_url( 'admin-ajax.php' )

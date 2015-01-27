@@ -6,7 +6,7 @@
 		this.url = m.prop( data.url );
 		this.plugins = m.prop( data.plugins );
 		this.slug = m.prop( data.slug || Object.keys(data.plugins)[0] );
-		this.n = m.prop( data.n );
+		this.n = m.prop( data.n || 10 );
 	};
 
 
@@ -22,27 +22,46 @@
 			vm.running = m.prop( false );
 			vm.config = new Config( wpp.config );
 			vm.results = m.prop( [] );
-			vm.average = m.prop( 0 );
+			vm.percentageDifference = m.prop( 0 );
+			vm.sums = m.prop( {
+				no_plugins: 0,
+				only_slug: 0,
+				all_but_slug: 0,
+				all_plugins: 0
+			} );
 		};
 
 		return vm;
 
 	})();
 
-	Profiler.recalculate = function() {
-		var results = Profiler.vm.results();
-
-		//console.log( sums );
-	};
-
 	Profiler.start = function() {
 		Profiler.vm.running( true );
 		Profiler.getResult();
 	};
 
+	Profiler.addResult = function( result ) {
+
+		// Add to results
+		Profiler.vm.results().push( result );
+
+		// Add to sums array
+		var sums = Profiler.vm.sums();
+		Object.keys(result).forEach( function( key ) {
+			sums[key] += result[key];
+		});
+
+		// Recalculate average difference
+		var percentageDifference = ( ( sums.only_slug / sums.no_plugins ) +
+			( sums.all_plugins / sums.all_but_slug ) ) / 2 * 100 - 100;
+		Profiler.vm.percentageDifference( percentageDifference );
+		m.redraw();
+	};
+
 	Profiler.getResult = function() {
 
-		if( Profiler.vm.results().length === Profiler.vm.config.n() ) {
+		// Quit loopback if we're at the desired number of results
+		if( ! Profiler.vm.running() || Profiler.vm.results().length === Profiler.vm.config.n() ) {
 			return;
 		}
 
@@ -57,16 +76,23 @@
 			}
 		};
 
+		// Get benchmark times & call self again
 		m.request( args).then( function(result) {
-			Profiler.vm.results().push( result );
-			//Profiler.recalculate();
-			m.redraw();
+			Profiler.addResult(result);
 			Profiler.getResult();
 		});
 	};
 
+	Profiler.toggle = function() {
+		( Profiler.vm.running() ) ? Profiler.stop() : Profiler.start();
+	};
+
 	Profiler.stop = function() {
 		Profiler.vm.running( false );
+	};
+
+	Profiler.reset = function() {
+		Profiler.vm.init();
 	};
 
 	/**
@@ -85,7 +111,7 @@
 
 		var vm = Profiler.vm;
 
-		if( ! Profiler.vm.running() ) {
+		if( ! Profiler.vm.running() && vm.results().length === 0 ) {
 
 			// render fields
 			return [
@@ -118,38 +144,47 @@
 		}
 
 		return m("div.results", [
-			m("p", "On average, the profiled plugin added xx% to each request."),
+			m("p", "On average, the profiled plugin added " + vm.percentageDifference().toPrecision(2) +"% to each request."),
 			m("table", [
 				m("tr", [
 					m("th.row-title", "#"),
 					vm.results().map( function( r, i ) {
 						return m( "td", i + 1 );
-					})
+					}),
+					m("th", "Total")
 				]),
 				m("tr", [
 					m("th", "No plugins"),
 					vm.results().map( function( r, i ) {
 						return m("td", r.no_plugins );
-					})
+					}),
+					m("td", vm.sums().no_plugins.toPrecision(3))
 				]),
 				m("tr", [
 					m("th", "Only profiled plugin"),
 					vm.results().map( function( r, i ) {
 						return m("td", r.only_slug );
-					})
+					}),
+					m("td", vm.sums().only_slug.toPrecision(3))
 				]),
 				m("tr", [
 					m("th", "All but profiled"),
 					vm.results().map( function( r, i ) {
 						return m("td", r.all_but_slug );
-					})
+					}),
+					m("td", vm.sums().all_but_slug.toPrecision(3))
 				]),
 				m("tr", [
 					m("th", "All plugins"),
 					vm.results().map( function( r, i ) {
 						return m("td", r.all_plugins );
-					})
+					}),
+					m("td", vm.sums().all_plugins.toPrecision(3))
 				])
+			]),
+			m("p", [
+				m( "input", { type: "button", class: "button", onclick: Profiler.toggle, value: ( vm.running() ? "Stop" : "Continue" ) }),
+				( vm.running() ) ? '' : m("input", { type: "button", class: "button button-danger", onclick: Profiler.reset, value: "Reset" } )
 			])
 		]);
 	};
