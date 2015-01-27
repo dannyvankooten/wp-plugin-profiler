@@ -3,13 +3,26 @@
 
 	// Config model
 	var Config = function( data ) {
+		var self = this;
 		this.url = m.prop( data.url );
 		this.plugins = m.prop( data.plugins );
 		this.slug = m.prop( data.slug || Object.keys(data.plugins)[0] );
 		this.n = m.prop( data.n || 10 );
+
+		this.plugin_name = function() {
+			var plugin_name = '';
+			var slugs = Object.keys( self.plugins() );
+
+			for( var i=0; i < slugs.length; i++ ) {
+				if( slugs[i] === self.slug() ) {
+					return self.plugins()[slugs[i]];
+
+				}
+			}
+
+			return name;
+		}
 	};
-
-
 
 	// Profiler
 	var Profiler = {};
@@ -17,11 +30,12 @@
 	Profiler.vm = (function() {
 
 		var vm = {};
+		vm.config = new Config( wpp.config );
 
 		vm.init = function() {
 			vm.running = m.prop( false );
-			vm.config = new Config( wpp.config );
 			vm.results = m.prop( [] );
+			vm.finished = m.prop( false );
 			vm.percentageDifference = m.prop( 0 );
 			vm.sums = m.prop( {
 				no_plugins: 0,
@@ -61,7 +75,8 @@
 	Profiler.getResult = function() {
 
 		// Quit loopback if we're at the desired number of results
-		if( ! Profiler.vm.running() || Profiler.vm.results().length === Profiler.vm.config.n() ) {
+		Profiler.vm.finished( Profiler.vm.results().length >= Profiler.vm.config.n() );
+		if( ! Profiler.vm.running() || Profiler.vm.finished() ) {
 			return;
 		}
 
@@ -120,7 +135,7 @@
 						m("th", "Select the plugin to profile."),
 						m("td", [
 							m("select", { onchange: m.withAttr( "value", Profiler.vm.config.slug ) }, Object.keys(Profiler.vm.config.plugins()).map( function( key ) {
-								return m("option", { value: key }, Profiler.vm.config.plugins()[key] );
+								return m("option", { value: key, selected: ( vm.config.slug() == key ) }, Profiler.vm.config.plugins()[key] );
 							}) )
 						] )
 					]),
@@ -144,7 +159,7 @@
 		}
 
 		return m("div.results", [
-			m("p", "On average, the profiled plugin added " + vm.percentageDifference().toPrecision(2) +"% to each request."),
+			m("p", m.trust( "On average, "+ vm.config.plugin_name() +" added <strong>" + vm.percentageDifference().toPrecision(2) +"%</strong> to each request." )),
 			m("table", [
 				m("tr", [
 					m("th.row-title", "#"),
@@ -154,28 +169,28 @@
 					m("th", "Total")
 				]),
 				m("tr", [
-					m("th", "No plugins"),
+					m("th.row-title", "No plugins"),
 					vm.results().map( function( r, i ) {
 						return m("td", r.no_plugins );
 					}),
 					m("td", vm.sums().no_plugins.toPrecision(3))
 				]),
 				m("tr", [
-					m("th", "Only profiled plugin"),
+					m("th.row-title", "Only "+ vm.config.plugin_name()),
 					vm.results().map( function( r, i ) {
 						return m("td", r.only_slug );
 					}),
 					m("td", vm.sums().only_slug.toPrecision(3))
 				]),
 				m("tr", [
-					m("th", "All but profiled"),
+					m("th.row-title", "All but "+ vm.config.plugin_name()),
 					vm.results().map( function( r, i ) {
 						return m("td", r.all_but_slug );
 					}),
 					m("td", vm.sums().all_but_slug.toPrecision(3))
 				]),
 				m("tr", [
-					m("th", "All plugins"),
+					m("th.row-title", "All plugins"),
 					vm.results().map( function( r, i ) {
 						return m("td", r.all_plugins );
 					}),
@@ -183,8 +198,8 @@
 				])
 			]),
 			m("p", [
-				m( "input", { type: "button", class: "button", onclick: Profiler.toggle, value: ( vm.running() ? "Stop" : "Continue" ) }),
-				( vm.running() ) ? '' : m("input", { type: "button", class: "button button-danger", onclick: Profiler.reset, value: "Reset" } )
+				( vm.finished() ) ? '' : m( "input", { type: "button", class: "button", onclick: Profiler.toggle, value: ( vm.running() ? "Stop" : "Continue" ) }),
+				( vm.running() && ! vm.finished() ) ? '' : m("input", { type: "button", class: "button button-danger", onclick: Profiler.reset, value: "Reset" } )
 			])
 		]);
 	};

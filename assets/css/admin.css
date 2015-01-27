@@ -12,6 +12,7 @@
 }
 #profiler .results th.row-title {
   text-align: right;
+  min-width: 80px;
 }
 
 /*# sourceMappingURL=admin.css.map */

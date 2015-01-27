@@ -82,7 +82,7 @@ class Manager {
 		$data = array(
 			'config' => array(
 				'url' => $profiler->url,
-				'plugins' => array_map( function( $a ) { return $a['Name']; }, get_plugins() )
+				'plugins' => array_map( function( $a ) { return sprintf( '%s v%s', $a['Name'], $a['Version'] ); }, get_plugins() )
 			),
 			'ajaxurl' => admin_url( 'admin-ajax.php' )
 		);
