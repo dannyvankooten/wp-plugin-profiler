@@ -4,7 +4,7 @@ Donate link: https://dannyvankooten.com/donate/
 Tags: profiler,benchmark,development,plugins
 Requires at least: 3.8
 Tested up to: 4.1.1
-Stable tag: 1.0
+Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,5 +55,14 @@ Please open a topic on the [WordPress.org plugin support forums](https://wordpre
 
 == Changelog ==
 
-= 1.0 - January 28, 2015 =
+= 1.1 - January 28, 2015 =
+
+**Improvements**
+
+- Profiler now runs client-side.
+- Results are shown in a bar chart, which updates live. (needs IE9+)
+- Profiling can be paused & resumed.
+- Improved reliability of benchmark results.
+
+= 1.0 - January 26, 2015 =
 Initial release
