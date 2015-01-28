@@ -3,6 +3,10 @@ WordPress Plugin Profiler
 
 Basic profiler for WordPress Plugins. Benchmarks any given plugin by testing response times with and without the plugin activated.
 
+Screenshot
+----------
+![image](https://cloud.githubusercontent.com/assets/885856/5939737/f4716e56-a738-11e4-9d3c-8c435652a4d2.png)
+
 Usage
 -----
 
