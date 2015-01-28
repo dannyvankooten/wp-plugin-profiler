@@ -1,6 +1,5 @@
 #profiler .results {
   width: 100%;
-  overflow-x: scroll;
 }
 #profiler .results table {
   border-collapse: collapse;

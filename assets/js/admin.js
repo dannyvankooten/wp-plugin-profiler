@@ -9,29 +9,34 @@
 		this.slug = m.prop( data.slug || Object.keys(data.plugins)[0] );
 		this.n = m.prop( data.n || 10 );
 
+		// Get name of selected plugin
 		this.plugin_name = function() {
-			var plugin_name = '';
 			var slugs = Object.keys( self.plugins() );
 
 			for( var i=0; i < slugs.length; i++ ) {
 				if( slugs[i] === self.slug() ) {
 					return self.plugins()[slugs[i]];
-
 				}
 			}
 
-			return name;
+			return 'Unknown';
 		}
 	};
 
 	// Profiler
 	var Profiler = {};
 
+	/**
+	 * View Model
+	 *
+	 * Holds the state of the profiler.
+	 */
 	Profiler.vm = (function() {
 
 		var vm = {};
 		vm.config = new Config( wpp.config );
 
+		// Initialize initial state
 		vm.init = function() {
 			vm.running = m.prop( false );
 			vm.results = m.prop( [] );
@@ -49,11 +54,15 @@
 
 	})();
 
-	Profiler.start = function() {
-		Profiler.vm.running( true );
-		Profiler.getResult();
-	};
-
+	/**
+	 * Add a result
+	 *
+	 * - Adds to view-model results array
+	 * - Updates the total sum
+	 * - Recalculates the average percentage difference
+	 *
+	 * @param result
+	 */
 	Profiler.addResult = function( result ) {
 
 		// Add to results
@@ -68,10 +77,14 @@
 		// Recalculate average difference
 		var percentageDifference = ( ( sums.only_slug / sums.no_plugins ) +
 			( sums.all_plugins / sums.all_but_slug ) ) / 2 * 100 - 100;
-		Profiler.vm.percentageDifference( percentageDifference );
+		Profiler.vm.percentageDifference( ( percentageDifference > 0 ) ? percentageDifference : 0 );
 		m.redraw();
 	};
 
+	/**
+	 * Get the benchmark times from server
+	 * - Will call itself until desired number of results is reached
+	 */
 	Profiler.getResult = function() {
 
 		// Quit loopback if we're at the desired number of results
@@ -98,16 +111,84 @@
 		});
 	};
 
+	/**
+	 * Toggle profiler (start / stop)
+	 * - Redraws view
+	 */
 	Profiler.toggle = function() {
 		( Profiler.vm.running() ) ? Profiler.stop() : Profiler.start();
+		m.redraw();
 	};
 
+
+	/**
+	 * Start the profiler
+	 */
+	Profiler.start = function() {
+		Profiler.vm.running( true );
+		Profiler.getResult();
+	};
+
+	/**
+	 * Stop (pause) the profiler
+	 */
 	Profiler.stop = function() {
 		Profiler.vm.running( false );
 	};
 
+	/**
+	 * Reset the profiler to its initial state
+	 */
 	Profiler.reset = function() {
 		Profiler.vm.init();
+	};
+
+	/**
+	 * Updates the canvas element with the new chart
+	 *
+	 * @param element
+	 * @param initialized
+	 * @param context
+	 */
+	Profiler.updateChart = function( element, initialized, context ) {
+
+		var vm = Profiler.vm;
+
+		// Recalculate averages
+		var sums = vm.sums();
+		var numberOfResults = vm.results().length;
+		var resultData = Object.keys(sums).map( function( key ) {
+			return ( sums[key] / numberOfResults ).toPrecision(4);
+		});
+
+		// Initialize chart if this is the first time it's drawn.
+		if( ! initialized ) {
+
+			// Initialize chart
+			var data = {
+				labels: [ "No plugins", "Only " + vm.config.plugin_name(), "All but " + vm.config.plugin_name(), "All plugins"],
+				datasets: [
+					{
+						label: "Load times",
+						strokeColor: "rgba(6, 211, 92,1)",
+						fillColor: "rgba(6, 211, 92,1)",
+						data: resultData
+					}
+				]
+			};
+			var options = {};
+
+			context.chart = new Chart( element.getContext("2d") ).Bar( data, options);
+		} else {
+
+			// Change data in chart with newly calculated data
+			for( var i=0; i < context.chart.datasets[0].bars.length; i++ ) {
+				context.chart.datasets[0].bars[i].value = resultData[i];
+			}
+			context.chart.update();
+		}
+
+		// add data to chart
 	};
 
 	/**
@@ -128,7 +209,7 @@
 
 		if( ! Profiler.vm.running() && vm.results().length === 0 ) {
 
-			// render fields
+			// Profiler is not running, render configuration form.
 			return [
 				m( "table.form-table", [
 					m("tr", [
@@ -158,49 +239,18 @@
 			];
 		}
 
+		// We have results to show. Render results.
 		return m("div.results", [
-			m("p", m.trust( "On average, "+ vm.config.plugin_name() +" added <strong>" + vm.percentageDifference().toPrecision(2) +"%</strong> to each request." )),
-			m("table", [
-				m("tr", [
-					m("th.row-title", "#"),
-					vm.results().map( function( r, i ) {
-						return m( "td", i + 1 );
-					}),
-					m("th", "Total")
-				]),
-				m("tr", [
-					m("th.row-title", "No plugins"),
-					vm.results().map( function( r, i ) {
-						return m("td", r.no_plugins );
-					}),
-					m("td", vm.sums().no_plugins.toPrecision(3))
-				]),
-				m("tr", [
-					m("th.row-title", "Only "+ vm.config.plugin_name()),
-					vm.results().map( function( r, i ) {
-						return m("td", r.only_slug );
-					}),
-					m("td", vm.sums().only_slug.toPrecision(3))
-				]),
-				m("tr", [
-					m("th.row-title", "All but "+ vm.config.plugin_name()),
-					vm.results().map( function( r, i ) {
-						return m("td", r.all_but_slug );
-					}),
-					m("td", vm.sums().all_but_slug.toPrecision(3))
-				]),
-				m("tr", [
-					m("th.row-title", "All plugins"),
-					vm.results().map( function( r, i ) {
-						return m("td", r.all_plugins );
-					}),
-					m("td", vm.sums().all_plugins.toPrecision(3))
-				])
-			]),
 			m("p", [
 				( vm.finished() ) ? '' : m( "input", { type: "button", class: "button", onclick: Profiler.toggle, value: ( vm.running() ? "Stop" : "Continue" ) }),
+				" ",
 				( vm.running() && ! vm.finished() ) ? '' : m("input", { type: "button", class: "button button-danger", onclick: Profiler.reset, value: "Reset" } )
-			])
+			]),
+			m("p", [
+				m("strong", ( vm.finished() ) ? "Done!" : "Running... " + vm.results().length + '/' + vm.config.n() )
+			]),
+			m("p", m.trust( "On average, "+ vm.config.plugin_name() +" added <strong>" + vm.percentageDifference().toPrecision(3) +"%</strong> to each request." )),
+			m("canvas", { width: 600, height: 400, config: Profiler.updateChart } )
 		]);
 	};
 
