@@ -59,6 +59,9 @@ class Profiler {
 	 */
 	public function run() {
 
+		// allow requests to self
+		add_filter( 'http_request_host_is_external', '__return_true' );
+
 		set_time_limit( 0 );
 
 		// fill results
