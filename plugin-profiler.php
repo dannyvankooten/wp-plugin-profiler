@@ -6,6 +6,7 @@ Version: 1.0
 Author: Danny van Kooten
 Author URI: https://dannyvankooten.com
 License: GPL v3
+GitHub Plugin URI: https://github.com/dannyvankooten/wp-plugin-profiler
 
 Copyright (C) 2014-2015, Danny van Kooten, hi@dannyvankooten.com
 
