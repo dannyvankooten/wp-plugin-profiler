@@ -15,7 +15,7 @@ by installing the plugin in your plugins folder and then placing the following f
 
 ```php
 // load the plugin profiler plugin early
-require_once WP_PLUGIN_DIR . '/plugin-profiler/plugin-profiler.php';
+require_once WP_PLUGIN_DIR . '/wp-plugin-profiler/plugin-profiler.php';
 ```
 
 To run a profile on any given plugin, visit **Tools > Plugin Profiler** in your WordPress admin area and select the plugin to profile.
