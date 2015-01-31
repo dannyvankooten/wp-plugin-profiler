@@ -46,9 +46,6 @@ class Manager {
 			return false;
 		}
 
-		// listen for wphs requests, user is authorized by now
-		$this->listen();
-
 		add_filter( 'admin_enqueue_scripts', array( $this, 'load_assets' ) );
 	}
 
@@ -90,19 +87,6 @@ class Manager {
 		wp_localize_script( 'plugin-profiler-admin', 'wpp', $data );
 
 		return true;
-	}
-
-	/**
-	 * Listen for actions
-	 */
-	private function listen() {
-
-		// Instantiate profiler if it's set
-		if( isset( $_REQUEST['_pp'] ) && $_REQUEST['_pp'] == 1 ) {
-			//$profiler = $this->container['profiler'];
-			//$profiler->run();
-		}
-
 	}
 
 	/**
