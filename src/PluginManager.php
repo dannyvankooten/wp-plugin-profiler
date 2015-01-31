@@ -86,6 +86,7 @@ class PluginManager {
 				if( $key ) {
 					unset( $plugins[ $key ] );
 				}
+				return $plugins;
 				break;
 
 			// make sure tested plugin is activated for this request
@@ -93,7 +94,6 @@ class PluginManager {
 				if( ! in_array( $this->profiled_plugin_slug, $plugins ) ) {
 					$plugins[] = $this->profiled_plugin_slug;
 				}
-
 				return $plugins;
 				break;
 
