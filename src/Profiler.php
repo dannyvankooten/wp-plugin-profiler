@@ -66,7 +66,7 @@ class Profiler {
 
 		// fill results
 		foreach( $this->steps as $step ) {
-			$this->results[ $step ] = $this->profile_step( $step );
+			$this->results[] = $this->profile_step( $step );
 		}
 	}
 
@@ -82,7 +82,7 @@ class Profiler {
 
 		$start = microtime( true );
 
-		wp_remote_get( $url,
+		$result = wp_remote_get( $url,
 			array(
 				'headers' => array(
 					'Accept-Encoding' => '*'

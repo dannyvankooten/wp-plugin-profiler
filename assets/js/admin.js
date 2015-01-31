@@ -42,12 +42,7 @@
 			vm.results = m.prop( [] );
 			vm.finished = m.prop( false );
 			vm.percentageDifference = m.prop( 0 );
-			vm.sums = m.prop( {
-				no_plugins: 0,
-				only_slug: 0,
-				all_but_slug: 0,
-				all_plugins: 0
-			} );
+			vm.sums = m.prop( [ 0, 0, 0, 0 ]);
 		};
 
 		return vm;
@@ -70,13 +65,14 @@
 
 		// Add to sums array
 		var sums = Profiler.vm.sums();
-		Object.keys(result).forEach( function( key ) {
-			sums[key] += result[key];
-		});
+		for( var i=0; i<result.length; i++) {
+			sums[i] += result[i];
+		}
+		Profiler.vm.sums(sums);
 
 		// Recalculate average difference
-		var percentageDifference = ( ( sums.only_slug / sums.no_plugins ) +
-			( sums.all_plugins / sums.all_but_slug ) ) / 2 * 100 - 100;
+		var percentageDifference = ( ( sums[1] / sums[0] ) +
+			( sums[3] / sums[2] ) ) / 2 * 100 - 100;
 		Profiler.vm.percentageDifference( ( percentageDifference > 0 ) ? percentageDifference : 0 );
 		m.redraw();
 	};
@@ -155,10 +151,9 @@
 		var vm = Profiler.vm;
 
 		// Recalculate averages
-		var sums = vm.sums();
 		var numberOfResults = vm.results().length;
-		var resultData = Object.keys(sums).map( function( key ) {
-			return ( sums[key] / numberOfResults ).toPrecision(4);
+		var resultData =  vm.sums().map( function( sum ) {
+			return ( sum / numberOfResults ).toPrecision(4);
 		});
 
 		// Initialize chart if this is the first time it's drawn.
@@ -176,9 +171,7 @@
 					}
 				]
 			};
-			var options = {};
-
-			context.chart = new Chart( element.getContext("2d") ).Bar( data, options);
+			context.chart = new Chart( element.getContext("2d") ).Bar( data, {});
 		} else {
 
 			// Change data in chart with newly calculated data
@@ -188,7 +181,6 @@
 			context.chart.update();
 		}
 
-		// add data to chart
 	};
 
 	/**
@@ -254,6 +246,7 @@
 		]);
 	};
 
+	// Mount the Profiler module
 	m.module( document.getElementById('profiler-mount'), Profiler );
 
 })();
