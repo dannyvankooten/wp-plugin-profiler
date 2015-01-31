@@ -16,7 +16,7 @@ Basic profiler for WordPress Plugins. Benchmarks any given plugin by testing res
 
 = Development of Plugin Profiler =
 
-Bug reports (and Pull Requests) for [Plugin Profiler are welcomed on GitHub](https://github.com/dannyvankooten/wp-plugin-profiler). Please note that GitHub is _not_ a support forum.
+Bug reports (and pull requests) for [Plugin Profiler are welcomed on GitHub](https://github.com/dannyvankooten/wp-plugin-profiler). Please note that GitHub is _not_ a support forum.
 
 **More information**
 
