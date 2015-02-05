@@ -78,14 +78,21 @@ class Profiler {
 	private function profile_step( $step ) {
 
 		// build url
-		$url = $this->generate_profile_url( $step );
+		$data = array(
+			'step' => $step,
+			'slug' => $this->plugin_slug
+		);
+
+		$url = add_query_arg( $data, $this->url );
 
 		$start = microtime( true );
 
 		$result = wp_remote_get( $url,
 			array(
 				'headers' => array(
-					'Accept-Encoding' => '*'
+					'Accept-Encoding' => '*',
+					'X-Plugin-Profiler-Action' => 'profile',
+					'X-Plugin-Profiler-Signature' => hash_hmac( 'sha1', build_query( $data ) , AUTH_KEY )
 				)
 			)
 		);
@@ -94,27 +101,5 @@ class Profiler {
 
 		return round( $time, 3 );
 	}
-
-	/**
-	 * Generates the URL to which the profile request is sent.
-	 *
-	 * @param $step
-	 * @return string
-	 */
-	private function generate_profile_url( $step ) {
-
-		$parameters = array(
-			'step' => $step,
-			'slug' => $this->plugin_slug
-		);
-
-		// generate secret for config parameters
-		$parameters['_pp_secret'] = hash_hmac( 'sha1', build_query( $parameters ) , AUTH_KEY );
-		$parameters['_pp_profiling'] = 1;
-
-		// return URL with secret parameter in it
-		return add_query_arg(  $parameters, $this->url );
-	}
-
 
 }

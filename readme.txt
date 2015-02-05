@@ -8,15 +8,37 @@ Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Basic profiler for your plugins.
+Basic plugin profiler. Benchmarks response times with and without a given plugin activated.
 
 == Description ==
 
 Basic profiler for WordPress Plugins. Benchmarks any given plugin by testing response times with and without the plugin activated.
 
-= Development of Plugin Profiler =
+> **Plugin Profiler** is on GitHub.
+>
+> Bug reports (and pull requests) are welcomed on the [Plugin Profiler GitHub repository](https://github.com/dannyvankooten/wp-plugin-profiler).
+>
+> Please note that GitHub is _not_ a support forum.
 
-Bug reports (and pull requests) for [Plugin Profiler are welcomed on GitHub](https://github.com/dannyvankooten/wp-plugin-profiler). Please note that GitHub is _not_ a support forum.
+= Profiling a plugin =
+
+This plugin measures response times of any URL on your website in the following ways.
+
+- No plugins activated
+- Only the selected plugin(s) activated
+- All but the selected plugin(s) activated
+- All plugins activated
+
+It then plots the response times in a chart and calculates the average response time time difference.
+
+While this way of profiling a plugin is very low-tech it can be interesting to measure the impact of a plugin on your site's response time.
+Please note that this way of benchmarking leaves a lot of factors out - like additional HTTP requests caused by a plugin, etc..
+
+= Installing Plugin Profiler =
+
+Since this plugin needs to filter out which plugins are activated for the profiling requests, it needs to be installed as a **must-use plugin** so it's loaded early.
+
+Have a look at the [installation instructions](https://wordpress.org/plugins/plugin-profiler/installation/) for details.
 
 **More information**
 
@@ -52,6 +74,10 @@ Please report it on [GitHub issues](https://github.com/dannyvankooten/wp-plugin-
 = I have another question =
 
 Please open a topic on the [WordPress.org plugin support forums](https://wordpress.org/support/plugin/plugin-profiler).
+
+== Screenshots ==
+
+1. The plugin in action, profiling [MailChimp for WordPress](https://wordpress.org/plugins/mailchimp-for-wp/).
 
 == Changelog ==
 

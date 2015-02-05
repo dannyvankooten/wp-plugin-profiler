@@ -39,12 +39,12 @@ class PluginManager {
 	private function is_valid_request() {
 
 		// if secret is not given or empty, bail right away.
-		if( ! isset( $_GET['_pp_secret'] ) || '' === $_GET['_pp_secret'] ) {
+		if( ! isset( $_SERVER['HTTP_X_PLUGIN_PROFILER_SIGNATURE'] ) || '' === $_GET['HTTP_X_PLUGIN_PROFILER_SIGNATURE'] ) {
 			return false;
 		}
 
 		// get given secret
-		$given_secret = (string) $_GET['_pp_secret'];
+		$given_secret = (string) $_SERVER['HTTP_X_PLUGIN_PROFILER_SIGNATURE'];
 
 		// generate expected secret
 		$parameters = array(
