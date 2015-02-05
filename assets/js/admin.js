@@ -10,7 +10,7 @@
 		this.n = m.prop( data.n || 10 );
 
 		// Get name of selected plugin
-		this.plugin_name = function() {
+		this.pluginName = function() {
 			var slugs = Object.keys( self.plugins() );
 
 			for( var i=0; i < slugs.length; i++ ) {
@@ -38,15 +38,15 @@
 
 		// Initialize initial state
 		vm.init = function() {
-			vm.running = m.prop( false );
-			vm.results = m.prop( [] );
+			vm.running = m.prop(false);
+			vm.results = m.prop([]);
 			vm.finished = m.prop( false );
 			vm.percentageDifference = m.prop( 0 );
-			vm.sums = m.prop( [ 0, 0, 0, 0 ]);
+			vm.sums = m.prop([ 0, 0, 0, 0 ]);
+			vm.averages = m.prop([ 0, 0, 0, 0 ]);
 		};
 
 		return vm;
-
 	})();
 
 	/**
@@ -65,12 +65,23 @@
 
 		// Add to sums array
 		var sums = Profiler.vm.sums();
-		for( var i=0; i<result.length; i++) {
-			sums[i] += result[i];
-		}
-		Profiler.vm.sums(sums);
+		var averages = Profiler.vm.averages();
 
-		// Recalculate average difference
+		// Loop through results
+		for( var i=0; i<result.length; i++) {
+
+			// add to sums array
+			sums[i] += result[i];
+
+			// recalculate average
+			averages[i] = ( sums[i] / Profiler.vm.results().length ).toPrecision(3);
+		}
+
+		// Store new data in View-Model
+		Profiler.vm.sums(sums);
+		Profiler.vm.averages(averages);
+
+		// Recalculate percentage
 		var percentageDifference = ( ( sums[1] / sums[0] ) +
 			( sums[3] / sums[2] ) ) / 2 * 100 - 100;
 		Profiler.vm.percentageDifference( ( percentageDifference > 0 ) ? percentageDifference : 0 );
@@ -150,24 +161,20 @@
 
 		var vm = Profiler.vm;
 
-		// Recalculate averages
-		var numberOfResults = vm.results().length;
-		var resultData =  vm.sums().map( function( sum ) {
-			return ( sum / numberOfResults ).toPrecision(4);
-		});
+		var chartData = vm.averages();
 
 		// Initialize chart if this is the first time it's drawn.
 		if( ! initialized ) {
 
 			// Initialize chart
 			var data = {
-				labels: [ "No plugins", "Only " + vm.config.plugin_name(), "All but " + vm.config.plugin_name(), "All plugins"],
+				labels: [ "No plugins", "Only " + vm.config.pluginName(), "All but " + vm.config.pluginName(), "All plugins"],
 				datasets: [
 					{
 						label: "Load times",
 						strokeColor: "rgba(6, 211, 92,1)",
 						fillColor: "rgba(6, 211, 92,1)",
-						data: resultData
+						data: chartData
 					}
 				]
 			};
@@ -176,11 +183,23 @@
 
 			// Change data in chart with newly calculated data
 			for( var i=0; i < context.chart.datasets[0].bars.length; i++ ) {
-				context.chart.datasets[0].bars[i].value = resultData[i];
+				context.chart.datasets[0].bars[i].value = chartData[i];
 			}
 			context.chart.update();
 		}
 
+	};
+
+	/**
+	 * Check if result deviates from average by more than 15%.
+	 *
+	 * @param result
+	 * @param step
+	 * @returns {boolean}
+	 */
+	Profiler.doesResultDeviate = function( result, step ) {
+		var averages = Profiler.vm.averages();
+		return result[step] > ( averages[step] * 1.15 ) || result[step] < ( averages[step] * 0.85 );
 	};
 
 	/**
@@ -198,6 +217,7 @@
 	Profiler.view = function( ctrl ) {
 
 		var vm = Profiler.vm;
+		var config = vm.config;
 
 		if( ! Profiler.vm.running() && vm.results().length === 0 ) {
 
@@ -232,6 +252,7 @@
 		}
 
 		// We have results to show. Render results.
+		var results = vm.results();
 		return m("div.results", [
 			m("p", [
 				( vm.finished() ) ? '' : m( "input", { type: "button", class: "button", onclick: Profiler.toggle, value: ( vm.running() ? "Stop" : "Continue" ) }),
@@ -239,10 +260,41 @@
 				( vm.running() && ! vm.finished() ) ? '' : m("input", { type: "button", class: "button button-danger", onclick: Profiler.reset, value: "Reset" } )
 			]),
 			m("p", [
-				m("strong", ( vm.finished() ) ? "Done!" : "Running... " + vm.results().length + '/' + vm.config.n() )
+				m("strong", ( vm.finished() ) ? "Done!" : "Running... " + vm.results().length + '/' + config.n() )
 			]),
-			m("p", m.trust( "On average, "+ vm.config.plugin_name() +" added <strong>" + vm.percentageDifference().toPrecision(3) +"%</strong> to each request." )),
-			m("canvas", { width: 600, height: 400, config: Profiler.updateChart } )
+			m("p", m.trust( "On average, "+ config.pluginName() +" added <strong>" + vm.percentageDifference().toPrecision(3) +"%</strong> to each request." )),
+			m("canvas", { width: 600, height: 400, config: Profiler.updateChart } ),
+			m("h3", "Profile Details"),
+			m("table.data", [
+				m("thead", [
+					m("tr", [
+						m("th", "#" ),
+						m("th", "No plugins"),
+						m("th", "Only " + config.pluginName()),
+						m("th", "All but " + config.pluginName()),
+						m("th", "All plugins")
+					])
+				]),
+				m('tbody', [
+					vm.results().map( function( row, resultIndex ) {
+						return m("tr", [
+							m("td", resultIndex + 1 ),
+							row.map( function( time, timeIndex ) {
+
+								var classes = [];
+								if( time == 0 ) {
+									classes.push('error');
+								} else if( Profiler.doesResultDeviate( row, timeIndex ) ) {
+									classes.push('deviates')
+								}
+
+								return m(
+									"td", { class: classes.join(',') }, time + "s" );
+							})
+						])
+					})
+				])
+			])
 		]);
 	};
 

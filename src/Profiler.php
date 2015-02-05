@@ -87,7 +87,7 @@ class Profiler {
 
 		$start = microtime( true );
 
-		$result = wp_remote_get( $url,
+		$response = wp_remote_get( $url,
 			array(
 				'headers' => array(
 					'Accept-Encoding' => '*',
@@ -96,6 +96,11 @@ class Profiler {
 				)
 			)
 		);
+
+		// return 0 if an error occurred
+		if( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) != 200 ) {
+			return 0;
+		}
 
 		$time = microtime( true ) - $start;
 

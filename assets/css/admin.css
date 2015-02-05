@@ -4,6 +4,19 @@
 #profiler .results table {
   border-collapse: collapse;
 }
+#profiler .results thead tr {
+  background: #bebebe;
+  border-bottom: 2px solid black;
+}
+#profiler .results tbody tr:nth-of-type(odd) {
+  background: #e9e9e9;
+}
+#profiler .results td.error {
+  color: red;
+}
+#profiler .results td.deviates {
+  color: orange;
+}
 #profiler .results th, #profiler .results td {
   border: 1px solid #ccc;
   padding: 5px;

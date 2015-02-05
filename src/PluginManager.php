@@ -23,8 +23,10 @@ class PluginManager {
 		$this->step = ( isset( $_GET['step'] ) ) ? $_GET['step'] : '';
 		$this->profiled_plugin_slug = ( isset( $_GET['slug'] ) ) ? $_GET['slug'] : '';
 
+		// check if request has the correct signature
 		if( ! $this->is_valid_request() ) {
-			return;
+			http_response_code( 403 );
+			exit;
 		}
 
 		// add filter to disable or enable plugins
