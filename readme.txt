@@ -4,7 +4,7 @@ Donate link: https://dannyvankooten.com/donate/
 Tags: profiler,benchmark,development,plugins
 Requires at least: 3.8
 Tested up to: 4.1.1
-Stable tag: 1.1
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,6 +80,18 @@ Please open a topic on the [WordPress.org plugin support forums](https://wordpre
 1. The plugin in action, profiling [MailChimp for WordPress](https://wordpress.org/plugins/mailchimp-for-wp/).
 
 == Changelog ==
+
+= 1.1.1 - February 5, 2015 =
+
+**Improvements**
+
+- Now marking request errors & deviating requests in result details
+- Better signature validating
+
+**Additions**
+
+- Added results table showing all request details
+
 
 = 1.1 - January 28, 2015 =
 

@@ -31,7 +31,7 @@ class Plugin {
 	/**
 	 * @const string
 	 */
-	const VERSION = '1.1';
+	const VERSION = '1.1.1';
 
 	/**
 	 * @const string
