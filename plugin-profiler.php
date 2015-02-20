@@ -2,7 +2,7 @@
 /*
 Plugin Name: Plugin Profiler
 Description: Profile your plugins.
-Version: 1.1
+Version: 1.1.2
 Author: Danny van Kooten
 Author URI: https://dannyvankooten.com
 License: GPL v3
@@ -31,7 +31,7 @@ class Plugin {
 	/**
 	 * @const string
 	 */
-	const VERSION = '1.1.1';
+	const VERSION = '1.1.2';
 
 	/**
 	 * @const string

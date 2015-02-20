@@ -72,8 +72,8 @@ class Manager {
 		wp_enqueue_style( 'plugin-profiler-admin', $this->asset_url( "/css/admin{$min}.css" ) );
 
 		wp_enqueue_script( 'es5-polyfill', 'https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.0.3/es5-shim.min.js' );
-		wp_enqueue_script( 'mithril', $this->asset_url( "/js/mithril{$min}.js" ), array(), Plugin::VERSION, true );
-		wp_enqueue_script( 'chart', $this->asset_url( "/js/chart{$min}.js" ), array(), Plugin::VERSION, true );
+		wp_enqueue_script( 'mithril', $this->asset_url( "/js/third-party/mithril{$min}.js" ), array(), Plugin::VERSION, true );
+		wp_enqueue_script( 'chart', $this->asset_url( "/js/third-party/Chart{$min}.js" ), array(), Plugin::VERSION, true );
 		wp_enqueue_script( 'plugin-profiler-admin', $this->asset_url( "/js/admin{$min}.js" ), array( 'mithril', 'chart' ), Plugin::VERSION, true );
 
 		$profiler = $this->container['profiler'];
